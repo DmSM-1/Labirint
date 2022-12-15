@@ -8,7 +8,8 @@
 #define init(ch,a,h) lab[(h-1)*W+i]=ch
 #define range(i,a,b) (int i = a; i<b; i++)
 #define inLab(a,b) (a<W && a>=0 && b<H && b>=0)
-#define fabs(a,b) ((a>b)?a-b:b-a)
+#define abs(a,b) ((a>b)?a-b:b-a)
+#define TIME 1000
 
 
 typedef struct _Queue{
@@ -20,6 +21,7 @@ typedef struct _Queue{
 
 int* lab  = NULL;
 int Xf, Yf;
+int Xs, Ys;
 int H, W;
 int x,y;
 Queue* head;
@@ -74,11 +76,13 @@ int readLab(FILE* input){
                 case 'o': 
                     init(-2,i,H);
                     Xf = i;
-                    Yf = H;
+                    Yf = H-1;
                     break;
                 case 'i':
                     init(1,i,H);
                     head=malloc(sizeof(Queue));
+                    Xs = i;
+                    Ys = H-1;
                     tail=head;
                     *head= (Queue){1,i,H-1,NULL};
                     break;
@@ -86,7 +90,6 @@ int readLab(FILE* input){
             }
         }
     }
-    printf("%d %d\n", Xf, Yf);
 }
 
 int printLab(){
@@ -97,10 +100,10 @@ int printLab(){
             ch = lab[W*i+j];
             switch (ch){
                 case -1: putchar('#'); break;
-                case 0:  putchar(' '); break;
                 case -2: putchar('o'); break;
                 case 1:  putchar('i'); break;
-                default: putchar('*'); break;
+                case -5: putchar('*'); break;
+                default: putchar(' ');  break;
             }
         }
         printf("\n");
@@ -111,51 +114,81 @@ int printLab(){
 int bypass(){
     int x,y;
     while(head){
-        usleep(1000);
-        system("clear");
-        printLab();
+        if ((abs(x,Xf)+abs(y,Yf))==1){
+            Xf=x;
+            Yf=y;
+            break;
+        }
 
-        if ((fabs(x,Xf)+fabs(y,Yf))==1) break;
-
-         x = head->x;
-         y = head->y;
-         if (inLab(x-1,y)){
+        x = head->x;
+        y = head->y;
+        if (inLab(x-1,y)){
             if (lab[W*y+x-1]==0 || (head->num+1)<lab[W*y+x-1]){
                 addQueue(x-1,y,head->num+1);
                 lab[W*y+x-1]=head->num+1;
             }
          }
-         if (inLab(x+1,y)){
+        if (inLab(x+1,y)){
             if (lab[W*y+x+1]==0 || (head->num+1)<lab[W*y+x+1]){
                 addQueue(x+1,y,head->num+1);
                 lab[W*y+x+1]=head->num+1;
             }
          }
-         if (inLab(x,y-1)){
+        if (inLab(x,y-1)){
             if (lab[W*(y-1)+x]==0 || (head->num+1)<lab[W*(y-1)+x]){
                 addQueue(x,y-1,head->num+1);
                 lab[W*(y-1)+x]=head->num+1;
             }
          }
-         if (inLab(x,y+1))
+        if (inLab(x,y+1))
             if (lab[W*(y+1)+x]==0){
                 addQueue(x,y+1,head->num+1);
                 lab[W*(y+1)+x]=head->num+1;
             }
-         remQueue();
+        remQueue();
     }
 }
 
 int way(){
-
+    if ((abs(Xf,Xs)+abs(Yf,Ys))==0) return 0;
+        
+    int x=0,y=0;
+    if (inLab(Xf+1,Yf) && !x)
+        if((lab[Yf*W+Xf]-lab[Yf*W+Xf+1])==1){
+            x=Xf+1;
+            y=Yf;
+        }
+    if (inLab(Xf-1,Yf) && !x)
+        if((lab[Yf*W+Xf]-lab[Yf*W+Xf-1])==1){
+            x=Xf-1;
+            y=Yf;
+        }
+    if (inLab(Xf,Yf+1) && !x)
+        if((lab[Yf*W+Xf]-lab[(Yf+1)*W+Xf])==1){
+            x=Xf;
+            y=Yf+1;
+        }
+    if (inLab(Xf,Yf-1) && !x)
+        if((lab[Yf*W+Xf]-lab[(Yf-1)*W+Xf])==1){
+            x=Xf;
+            y=Yf-1;
+        }
+    lab[Yf*W+Xf]=-5;
+    Xf=x;
+    Yf=y;
+    way();
+    
 }
 
 
 int main(){
     FILE* input = fopen("lab.txt", "r");
     readLab(input);
+    fclose(input);
+
     bypass();
-    system("clear");
+    printf("Lenght: %d\n", lab[Yf*W+Xf]);
+    way();
     printLab();
     free(lab);
     return 0;
