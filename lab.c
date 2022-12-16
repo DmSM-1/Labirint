@@ -11,7 +11,7 @@
 #define metrixD 144
 #define trueWay(a,b) (lab[Yf*W+Xf]-lab[(Yf+(b))*W+Xf+(a)]==metrixG || (lab[Yf*W+Xf]-lab[(Yf+(b))*W+Xf+(a)])==metrixD)
 #define TIME 0
-//#define DEBUG
+#define DEBUG
 
 typedef struct _Queue{
     int num;
@@ -121,9 +121,9 @@ int bypass(){
     int x,y;
     while(head){
         #ifdef DEBUG
-        system("clear");
-        printLab();
-        printQueue();
+        //system("clear");
+        //printLab();
+        //printQueue();
         usleep(TIME);
         #endif
         if (abs(x,Xf)<=1 && abs(y,Yf)<=1){
@@ -196,8 +196,8 @@ int way(){
     Yf=y;
 
     #ifdef DEBUG
-    system("clear");
-    printLab();
+    //system("clear");
+    //printLab();
     usleep(TIME);
     #endif
 
