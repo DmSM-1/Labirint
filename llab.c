@@ -90,7 +90,7 @@ int readLab(FILE* input){
 int printLab(){
     int ch = 0;
     for (int i = 0; i<H;i++){
-        printf("%3d: ",i);
+        //printf("%3d: ",i);
         for (int j = 0; j<W;j++){
             ch = lab[W*i+j];
             switch (ch){
@@ -174,15 +174,15 @@ int way(){
     
 }
 
-int main(){
-    FILE* input = fopen("lab.txt", "r");
+int main(int argc, char** argv){
+    FILE* input = fopen(argv[1], "r");
     readLab(input);
     fclose(input);
 
     bypass();
     printf("Lenght: %d\n", lab[Yf*W+Xf]);
     way();
-    
+
     printLab();
     free(lab);
     return 0;
