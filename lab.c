@@ -1,16 +1,14 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
-#include<unistd.h>
 
 #define MAX(a,b) (a>b)?a:b
-#define MIN(a,b) (a<b && a!=0):a:b
 #define init(ch,a,h) lab[(h-1)*W+i]=ch
-#define range(i,a,b) (int i = a; i<b; i++)
 #define inLab(a,b) (a<W && a>=0 && b<H && b>=0)
 #define abs(a,b) ((a>b)?a-b:b-a)
-#define TIME 1000
-
+#define metrixG 100
+#define metrixD 144
+#define trueWay(a,b) (lab[Yf*W+Xf]-lab[(Yf+(b))*W+Xf+(a)]==metrixG || lab[Yf*W+Xf]-lab[(Yf+(b))*W+Xf+(a)]==metrixD)
 
 typedef struct _Queue{
     int num;
@@ -68,7 +66,7 @@ int readLab(FILE* input){
         H++;
         lab=realloc(lab, W*H*sizeof(int));
 
-        for range(i,0,W){
+        for (int i = 0; i<W;i++){
             ch = buf[i];
             switch (ch){
                 case '#': init(-1,i,H); break;
@@ -94,9 +92,8 @@ int readLab(FILE* input){
 
 int printLab(){
     int ch = 0;
-    for range(i,0,H){
-        printf("%3d: ",i);
-        for range(j,0,W){
+    for (int i = 0; i<H;i++){
+        for (int j = 0; j<W;j++){
             ch = lab[W*i+j];
             switch (ch){
                 case -1: putchar('#'); break;
@@ -114,37 +111,29 @@ int printLab(){
 int bypass(){
     int x,y;
     while(head){
-        if ((abs(x,Xf)+abs(y,Yf))==1){
+        if ((abs(x,Xf)+abs(y,Yf))==0){
             Xf=x;
             Yf=y;
             break;
         }
-
         x = head->x;
         y = head->y;
-        if (inLab(x-1,y)){
-            if (lab[W*y+x-1]==0 || (head->num+1)<lab[W*y+x-1]){
-                addQueue(x-1,y,head->num+1);
-                lab[W*y+x-1]=head->num+1;
-            }
-         }
-        if (inLab(x+1,y)){
-            if (lab[W*y+x+1]==0 || (head->num+1)<lab[W*y+x+1]){
-                addQueue(x+1,y,head->num+1);
-                lab[W*y+x+1]=head->num+1;
-            }
-         }
-        if (inLab(x,y-1)){
-            if (lab[W*(y-1)+x]==0 || (head->num+1)<lab[W*(y-1)+x]){
-                addQueue(x,y-1,head->num+1);
-                lab[W*(y-1)+x]=head->num+1;
-            }
-         }
-        if (inLab(x,y+1))
-            if (lab[W*(y+1)+x]==0){
-                addQueue(x,y+1,head->num+1);
-                lab[W*(y+1)+x]=head->num+1;
-            }
+        if (lab[W*y+x-1]==0 || (head->num+metrixG)<lab[W*y+x-1]){
+            addQueue(x-1,y,head->num+metrixG);
+            lab[W*y+x-1]=head->num+metrixG;
+        }
+        if (lab[W*y+x+1]==0 || (head->num+metrixG)<lab[W*y+x+1]){
+            addQueue(x+1,y,head->num+metrixG);
+            lab[W*y+x+1]=head->num+metrixG;
+        }
+        if (lab[W*(y-1)+x]==0 || (head->num+metrixG)<lab[W*(y-1)+x]){
+            addQueue(x,y-1,head->num+metrixG);
+            lab[W*(y-1)+x]=head->num+metrixG;
+        }
+        /**if (lab[W*(y+1)+x]==0 || (head->num+metrixG)<lab[W*(y+1)+x]){
+            addQueue(x,y+1,head->num+metrixG);
+            lab[W*(y+1)+x]=head->num+metrixG;
+        }**/
         remQueue();
     }
 }
@@ -153,26 +142,15 @@ int way(){
     if ((abs(Xf,Xs)+abs(Yf,Ys))==0) return 0;
         
     int x=0,y=0;
-    if (inLab(Xf+1,Yf) && !x)
-        if((lab[Yf*W+Xf]-lab[Yf*W+Xf+1])==1){
-            x=Xf+1;
-            y=Yf;
-        }
-    if (inLab(Xf-1,Yf) && !x)
-        if((lab[Yf*W+Xf]-lab[Yf*W+Xf-1])==1){
-            x=Xf-1;
-            y=Yf;
-        }
-    if (inLab(Xf,Yf+1) && !x)
-        if((lab[Yf*W+Xf]-lab[(Yf+1)*W+Xf])==1){
-            x=Xf;
-            y=Yf+1;
-        }
-    if (inLab(Xf,Yf-1) && !x)
-        if((lab[Yf*W+Xf]-lab[(Yf-1)*W+Xf])==1){
-            x=Xf;
-            y=Yf-1;
-        }
+    if(trueWay(1,0)){ 
+        x=Xf+1; y=Yf;
+    }else if(trueWay(-1,0)){
+        x=Xf-1; y=Yf;
+    }else if(trueWay(0,1)){
+        x=Xf; y=Yf+1;
+    }else if(trueWay(0,-1)){
+        x=Xf; y=Yf-1;
+    }
     lab[Yf*W+Xf]=-5;
     Xf=x;
     Yf=y;
@@ -180,15 +158,15 @@ int way(){
     
 }
 
-
-int main(){
-    FILE* input = fopen("lab.txt", "r");
+int main(int argc, char** argv){
+    FILE* input = fopen(argv[1], "r");
     readLab(input);
     fclose(input);
 
     bypass();
-    printf("Lenght: %d\n", lab[Yf*W+Xf]);
+    printf("Lenght: %d\n", lab[Yf*W+Xf]-1);
     way();
+
     printLab();
     free(lab);
     return 0;
