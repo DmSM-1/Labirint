@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+#include<unistd.h>
 
 #define MAX(a,b) (a>b)?a:b
 #define init(ch,a,h) lab[(h-1)*W+i]=ch
@@ -8,7 +9,9 @@
 #define abs(a,b) ((a>b)?a-b:b-a)
 #define metrixG 100
 #define metrixD 144
-#define trueWay(a,b) (lab[Yf*W+Xf]-lab[(Yf+(b))*W+Xf+(a)]==metrixG || lab[Yf*W+Xf]-lab[(Yf+(b))*W+Xf+(a)]==metrixD)
+#define trueWay(a,b) (lab[Yf*W+Xf]-lab[(Yf+(b))*W+Xf+(a)]==metrixG || (lab[Yf*W+Xf]-lab[(Yf+(b))*W+Xf+(a)])==metrixD)
+#define TIME 0
+//#define DEBUG
 
 typedef struct _Queue{
     int num;
@@ -22,6 +25,7 @@ int Xf, Yf;
 int Xs, Ys;
 int H, W;
 int x,y;
+int len=0;
 Queue* head;
 Queue* tail;
 
@@ -100,7 +104,12 @@ int printLab(){
                 case -2: putchar('o'); break;
                 case 1:  putchar('i'); break;
                 case -5: putchar('*'); break;
+                case 0: putchar(' '); break;
+                #ifdef DEBUG
+                default: putchar('.');  break;
+                #else
                 default: putchar(' ');  break;
+                #endif
             }
         }
         printf("\n");
@@ -111,9 +120,16 @@ int printLab(){
 int bypass(){
     int x,y;
     while(head){
-        if ((abs(x,Xf)+abs(y,Yf))==0){
+        #ifdef DEBUG
+        system("clear");
+        printLab();
+        printQueue();
+        usleep(TIME);
+        #endif
+        if (abs(x,Xf)<=1 && abs(y,Yf)<=1){
             Xf=x;
             Yf=y;
+            len+=lab[W*y+x]+metrixG+(abs(x,Xf)*abs(y,Yf))*(metrixD-metrixG);
             break;
         }
         x = head->x;
@@ -130,19 +146,43 @@ int bypass(){
             addQueue(x,y-1,head->num+metrixG);
             lab[W*(y-1)+x]=head->num+metrixG;
         }
-        /**if (lab[W*(y+1)+x]==0 || (head->num+metrixG)<lab[W*(y+1)+x]){
+        if (lab[W*(y+1)+x]==0 || (head->num+metrixG)<lab[W*(y+1)+x]){
             addQueue(x,y+1,head->num+metrixG);
             lab[W*(y+1)+x]=head->num+metrixG;
-        }**/
+        }
+        if (lab[W*(y+1)+x+1]==0 || (head->num+metrixD)<lab[W*(y+1)+x+1]){
+            addQueue(x+1,y+1,head->num+metrixD);
+            lab[W*(y+1)+x+1]=head->num+metrixD;
+        }
+        if (lab[W*(y-1)+x+1]==0 || (head->num+metrixD)<lab[W*(y-1)+x+1]){
+            addQueue(x+1,y-1,head->num+metrixD);
+            lab[W*(y-1)+x+1]=head->num+metrixD;
+        }
+        if (lab[W*(y-1)+x-1]==0 || (head->num+metrixD)<lab[W*(y-1)+x-1]){
+            addQueue(x-1,y-1,head->num+metrixD);
+            lab[W*(y-1)+x-1]=head->num+metrixD;
+        }
+        if (lab[W*(y+1)+x-1]==0 || (head->num+metrixD)<lab[W*(y+1)+x-1]){
+            addQueue(x-1,y+1,head->num+metrixD);
+            lab[W*(y+1)+x-1]=head->num+metrixD;
+        }
         remQueue();
     }
 }
 
 int way(){
     if ((abs(Xf,Xs)+abs(Yf,Ys))==0) return 0;
-        
+    
     int x=0,y=0;
-    if(trueWay(1,0)){ 
+    if(trueWay(-1,-1)){ 
+        x=Xf-1; y=Yf-1;
+    }else if(trueWay(1,-1)){ 
+        x=Xf+1; y=Yf-1;
+    }else if(trueWay(-1,1)){ 
+        x=Xf-1; y=Yf+1;
+    }else if(trueWay(1,1)){ 
+        x=Xf+1; y=Yf+1;
+    }else if(trueWay(1,0)){ 
         x=Xf+1; y=Yf;
     }else if(trueWay(-1,0)){
         x=Xf-1; y=Yf;
@@ -154,6 +194,13 @@ int way(){
     lab[Yf*W+Xf]=-5;
     Xf=x;
     Yf=y;
+
+    #ifdef DEBUG
+    system("clear");
+    printLab();
+    usleep(TIME);
+    #endif
+
     way();
     
 }
@@ -164,10 +211,11 @@ int main(int argc, char** argv){
     fclose(input);
 
     bypass();
-    printf("Lenght: %d\n", lab[Yf*W+Xf]-1);
     way();
 
+    system("clear");
     printLab();
+    printf("Lenght: %d\n", len-1);
     free(lab);
     return 0;
 }
